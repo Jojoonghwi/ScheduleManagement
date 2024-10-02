@@ -74,78 +74,41 @@ public class ScheduleController {
         });
     }
 
-    //ID로 조회
-    @GetMapping("/id/{id}")
-    public List<ScheduleResponseDto> getSchedulesId(@PathVariable String id) {
-        // DB 조회
-        String sql = "SELECT * FROM schedule WHERE id = ? ORDER BY date DESC";
+    @GetMapping({"/id/{id}", "/name/{name}", "/date/{date}", "/datename/{date}/{name}"})
+    public List<ScheduleResponseDto> getSchedules(
+            //required = false : 경로가 없어도 오류 발생하지 않도록
+            @PathVariable(required = false) String id,
+            @PathVariable(required = false) String name,
+            @PathVariable(required = false) String date) {
 
-        return jdbcTemplate.query(sql, new Object[]{id}, new RowMapper<ScheduleResponseDto>() {
+        //WHERE 1=1은 뒤에 AND를 붙이기 위한 편의성
+        StringBuilder sql = new StringBuilder("SELECT * FROM schedule WHERE 1=1");
+
+        // SQL 조건문을 동적으로 추가
+        List<Object> params = new ArrayList<>();
+        if (id != null) {
+            sql.append(" AND id = ?");
+            params.add(id);
+        }
+        if (name != null) {
+            sql.append(" AND name = ?");
+            params.add(name);
+        }
+        if (date != null) {
+            sql.append(" AND date = ?");
+            params.add(date);
+        }
+
+        sql.append(" ORDER BY date DESC");
+
+        return jdbcTemplate.query(sql.toString(), params.toArray(), new RowMapper<ScheduleResponseDto>() {
             @Override
             public ScheduleResponseDto mapRow(ResultSet rs, int rowNum) throws SQLException {
-                // SQL의 결과로 받아온 schedule 데이터를 ScheduleResponseDto 타입으로 변환
-                Long id = rs.getLong("id");
+                Long scheduleId = rs.getLong("id");
                 String scheduleName = rs.getString("name");
                 String todo = rs.getString("todo");
-                String date = rs.getString("date");
-                return new ScheduleResponseDto(id, scheduleName, todo, date);
-            }
-        });
-    }
-
-    //이름으로 모두 조회
-    @GetMapping("/name/{name}")
-    public List<ScheduleResponseDto> getSchedulesName(@PathVariable String name) {
-        // DB 조회
-        String sql = "SELECT * FROM schedule WHERE name = ? ORDER BY date DESC";
-
-        return jdbcTemplate.query(sql, new Object[]{name}, new RowMapper<ScheduleResponseDto>() {
-            @Override
-            public ScheduleResponseDto mapRow(ResultSet rs, int rowNum) throws SQLException {
-                // SQL의 결과로 받아온 schedule 데이터를 ScheduleResponseDto 타입으로 변환
-                Long id = rs.getLong("id");
-                String scheduleName = rs.getString("name");
-                String todo = rs.getString("todo");
-                String date = rs.getString("date");
-                return new ScheduleResponseDto(id, scheduleName, todo, date);
-            }
-        });
-    }
-
-    //날짜로 모두 조회
-    @GetMapping("/date/{date}")
-    public List<ScheduleResponseDto> getSchedulesDate(@PathVariable String date) {
-        // DB 조회
-        String sql = "SELECT * FROM schedule WHERE date = ? ORDER BY date DESC";
-
-        return jdbcTemplate.query(sql, new Object[]{date}, new RowMapper<ScheduleResponseDto>() {
-            @Override
-            public ScheduleResponseDto mapRow(ResultSet rs, int rowNum) throws SQLException {
-                // SQL의 결과로 받아온 schedule 데이터를 ScheduleResponseDto 타입으로 변환
-                Long id = rs.getLong("id");
-                String scheduleName = rs.getString("name");
-                String todo = rs.getString("todo");
-                String date = rs.getString("date");
-                return new ScheduleResponseDto(id, scheduleName, todo, date);
-            }
-        });
-    }
-
-    //이름과 날짜로 모두 조회
-    @GetMapping("/datename/{date}/{name}")
-    public List<ScheduleResponseDto> getSchedulesDateName(@PathVariable String date, @PathVariable String name) {
-        // DB 조회
-        String sql = "SELECT * FROM schedule WHERE date = ? and name = ? ORDER BY date DESC";
-
-        return jdbcTemplate.query(sql, new Object[]{date, name}, new RowMapper<ScheduleResponseDto>() {
-            @Override
-            public ScheduleResponseDto mapRow(ResultSet rs, int rowNum) throws SQLException {
-                // SQL의 결과로 받아온 schedule 데이터를 ScheduleResponseDto 타입으로 변환
-                Long id = rs.getLong("id");
-                String scheduleName = rs.getString("name");
-                String todo = rs.getString("todo");
-                String date = rs.getString("date");
-                return new ScheduleResponseDto(id, scheduleName, todo, date);
+                String scheduleDate = rs.getString("date");
+                return new ScheduleResponseDto(scheduleId, scheduleName, todo, scheduleDate);
             }
         });
     }
