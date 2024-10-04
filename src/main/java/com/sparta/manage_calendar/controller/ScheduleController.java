@@ -13,8 +13,6 @@ import java.util.*;
 @RequestMapping("/api/schedule")
 public class ScheduleController {
 
-    //private final Map<Long, Schedule> ScheduleList  = new HashMap<>();
-
     private final JdbcTemplate jdbcTemplate;
 
     public ScheduleController(JdbcTemplate jdbcTemplate) {
